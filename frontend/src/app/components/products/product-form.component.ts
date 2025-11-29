@@ -6,10 +6,10 @@ import { Product } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
 
 @Component({
-    selector: 'app-product-form',
-    standalone: true,
-    imports: [CommonModule, FormsModule],
-    template: `
+  selector: 'app-product-form',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
     <div class="container">
       <h2>{{ isEdit ? 'Edit Product' : 'New Product' }}</h2>
       
@@ -41,7 +41,7 @@ import { ProductService } from '../../services/product.service';
       </form>
     </div>
   `,
-    styles: [`
+  styles: [`
     .container { padding: 20px; max-width: 500px; }
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
@@ -53,47 +53,47 @@ import { ProductService } from '../../services/product.service';
   `]
 })
 export class ProductFormComponent implements OnInit {
-    product: Product = { name: '', price: 0, quantity: 0 };
-    isEdit = false;
+  product: Product = { name: '', price: 0, quantity: 0 };
+  isEdit = false;
 
-    constructor(
-        private productService: ProductService,
-        private router: Router,
-        private route: ActivatedRoute,
-        private readonly cdr: ChangeDetectorRef
-    ) {}
+  constructor(
+    private productService: ProductService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private readonly cdr: ChangeDetectorRef
+  ) { }
 
-    ngOnInit() {
-        this.route.params.subscribe(params => {
-            const id = params['id'];
-            if (id) {
-                this.isEdit = true;
-                this.productService.getById(+id).subscribe({
-                    next: (data) => {
-                        this.product = data;
-                        this.cdr.markForCheck();
-                    },
-                    error: (err) => console.error('Error loading product', err)
-                });
-            }
+  ngOnInit() {
+    this.route.params.subscribe(params => {
+      const id = params['id'];
+      if (id) {
+        this.isEdit = true;
+        this.productService.getById(+id).subscribe({
+          next: (data) => {
+            this.product = data;
+            this.cdr.markForCheck();
+          },
+          error: (err) => console.error('Error loading product', err)
         });
-    }
+      }
+    });
+  }
 
-    onSubmit() {
-        if (this.isEdit && this.product.id) {
-            this.productService.update(this.product.id, this.product).subscribe({
-                next: () => { this.router.navigate(['/products']); },
-                error: (err) => console.error('Error updating product', err)
-            });
-        } else {
-            this.productService.create(this.product).subscribe({
-                next: () => { this.router.navigate(['/products']); },
-                error: (err) => console.error('Error creating product', err)
-            });
-        }
+  onSubmit() {
+    if (this.isEdit && this.product.id) {
+      this.productService.update(this.product.id, this.product).subscribe({
+        next: () => { this.router.navigate(['/products']); },
+        error: (err) => console.error('Error updating product', err)
+      });
+    } else {
+      this.productService.create(this.product).subscribe({
+        next: () => { this.router.navigate(['/products']); },
+        error: (err) => console.error('Error creating product', err)
+      });
     }
+  }
 
-    cancel() {
-        this.router.navigate(['/products']);
-    }
+  cancel() {
+    this.router.navigate(['/products']);
+  }
 }
