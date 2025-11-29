@@ -7,6 +7,13 @@ spring:
     import: optional:configserver:http://config-service:8888
   cloud:
     gateway:
+      globalcors:
+        cors-configurations:
+          "[/**]":
+            allowedOrigins: "http://localhost:4200"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
       routes:
         - id: customer-service
           uri: http://customer-service:8081
@@ -43,7 +50,6 @@ spring:
   config:
     activate:
       on-profile: dev
-  
 ---
 spring:
   config:
@@ -64,7 +70,6 @@ spring:
           uri: lb://billing-service
           predicates:
             - Path=/api/bills/**
-
 ---
 spring:
   config:
