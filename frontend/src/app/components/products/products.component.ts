@@ -1,14 +1,15 @@
-import { Component, afterNextRender } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
 
 @Component({
-    selector: 'app-products',
-    standalone: true,
-    imports: [CommonModule, RouterLink],
-    template: `
+  selector: 'app-products',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  host: { 'ngSkipHydration': 'true' },
+  template: `
     <div class="container">
       <div class="header">
         <h2>Products</h2>
@@ -48,7 +49,7 @@ import { ProductService } from '../../services/product.service';
       </table>
     </div>
   `,
-    styles: [`
+  styles: [`
     .container { padding: 20px; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .table { width: 100%; border-collapse: collapse; }
@@ -61,28 +62,27 @@ import { ProductService } from '../../services/product.service';
     .text-center { text-align: center; }
   `]
 })
-export class ProductsComponent {
-    products: Product[] = [];
+export class ProductsComponent implements OnInit {
+  products: Product[] = [];
+  private readonly productService = inject(ProductService);
 
-    constructor(private productService: ProductService) {
-        afterNextRender(() => {
-            this.loadProducts();
-        });
-    }
+  ngOnInit() {
+    this.loadProducts();
+  }
 
-    loadProducts() {
-        this.productService.getAll().subscribe({
-            next: (data) => this.products = data,
-            error: (err) => console.error('Error loading products', err)
-        });
-    }
+  loadProducts() {
+    this.productService.getAll().subscribe({
+      next: (data) => this.products = data,
+      error: (err) => console.error('Error loading products', err)
+    });
+  }
 
-    deleteProduct(id: number) {
-        if (confirm('Are you sure you want to delete this product?')) {
-            this.productService.delete(id).subscribe({
-                next: () => this.loadProducts(),
-                error: (err) => console.error('Error deleting product', err)
-            });
-        }
+  deleteProduct(id: number) {
+    if (confirm('Are you sure you want to delete this product?')) {
+      this.productService.delete(id).subscribe({
+        next: () => this.loadProducts(),
+        error: (err) => console.error('Error deleting product', err)
+      });
     }
+  }
 }

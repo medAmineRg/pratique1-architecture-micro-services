@@ -1,14 +1,15 @@
-import { Component, afterNextRender } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Bill } from '../../models/bill.model';
 import { BillService } from '../../services/bill.service';
 
 @Component({
-    selector: 'app-bills',
-    standalone: true,
-    imports: [CommonModule, RouterLink],
-    template: `
+  selector: 'app-bills',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  host: { 'ngSkipHydration': 'true' },
+  template: `
     <div class="container">
       <div class="header">
         <h2>Bills</h2>
@@ -50,7 +51,7 @@ import { BillService } from '../../services/bill.service';
       </table>
     </div>
   `,
-    styles: [`
+  styles: [`
     .container { padding: 20px; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .table { width: 100%; border-collapse: collapse; }
@@ -63,28 +64,39 @@ import { BillService } from '../../services/bill.service';
     .text-center { text-align: center; }
   `]
 })
-export class BillsComponent {
-    bills: Bill[] = [];
+export class BillsComponent implements OnInit {
+  bills: Bill[] = [];
+  private readonly billService = inject(BillService);
 
-    constructor(private billService: BillService) {
-        afterNextRender(() => {
-            this.loadBills();
-        });
-    }
+  ngOnInit() {
+    this.loadBills();
+  }
 
-    loadBills() {
-        this.billService.getAll().subscribe({
-            next: (data) => this.bills = data,
-            error: (err) => console.error('Error loading bills', err)
-        });
-    }
+  loadBills() {
+    this.billService.getAll().subscribe({
+      next: (data) => {
+        console.log('Raw bills data:', data);
+        // Map snake_case to camelCase if needed
+        this.bills = data.map((bill: any) => ({
+          id: bill.id,
+          customerId: bill.customerId ?? bill.customer_id,
+          productId: bill.productId ?? bill.product_id,
+          quantity: bill.quantity,
+          totalAmount: bill.totalAmount ?? bill.total_amount,
+          createdAt: bill.createdAt ?? bill.created_at
+        }));
+        console.log('Mapped bills:', this.bills);
+      },
+      error: (err) => console.error('Error loading bills', err)
+    });
+  }
 
-    deleteBill(id: number) {
-        if (confirm('Are you sure you want to delete this bill?')) {
-            this.billService.delete(id).subscribe({
-                next: () => this.loadBills(),
-                error: (err) => console.error('Error deleting bill', err)
-            });
-        }
+  deleteBill(id: number) {
+    if (confirm('Are you sure you want to delete this bill?')) {
+      this.billService.delete(id).subscribe({
+        next: () => this.loadBills(),
+        error: (err) => console.error('Error deleting bill', err)
+      });
     }
+  }
 }

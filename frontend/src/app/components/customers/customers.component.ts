@@ -1,4 +1,4 @@
-import { Component, afterNextRender } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Customer } from '../../models/customer.model';
@@ -8,6 +8,7 @@ import { CustomerService } from '../../services/customer.service';
     selector: 'app-customers',
     standalone: true,
     imports: [CommonModule, RouterLink],
+    host: { 'ngSkipHydration': 'true' },
     template: `
     <div class="container">
       <div class="header">
@@ -61,13 +62,12 @@ import { CustomerService } from '../../services/customer.service';
     .text-center { text-align: center; }
   `]
 })
-export class CustomersComponent {
+export class CustomersComponent implements OnInit {
     customers: Customer[] = [];
+    private readonly customerService = inject(CustomerService);
 
-    constructor(private customerService: CustomerService) {
-        afterNextRender(() => {
-            this.loadCustomers();
-        });
+    ngOnInit() {
+        this.loadCustomers();
     }
 
     loadCustomers() {
