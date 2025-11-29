@@ -1,0 +1,14 @@
+package me.medev.billingservice.repository;
+
+import me.medev.billingservice.entity.Bill;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface BillRepository extends JpaRepository<Bill, Long> {
+    List<Bill> findByCustomerId(Long customerId);
+
+    List<Bill> findByProductId(Long productId);
+}

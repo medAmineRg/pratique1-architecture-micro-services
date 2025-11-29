@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: inventory-service
+  profiles:
+    active: dev
+  config:
+    import: "configserver:http://localhost:8888"
+
+server:
+  port: 8082
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+
+---
+spring:
+  profiles: dev
+
+---
+spring:
+  profiles: prod
