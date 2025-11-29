@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Bill } from '../../models/bill.model';
 import { BillService } from '../../services/bill.service';
@@ -65,11 +65,14 @@ import { BillService } from '../../services/bill.service';
 })
 export class BillsComponent implements OnInit {
     bills: Bill[] = [];
+    private platformId = inject(PLATFORM_ID);
 
     constructor(private billService: BillService) { }
 
     ngOnInit() {
-        this.loadBills();
+        if (isPlatformBrowser(this.platformId)) {
+            this.loadBills();
+        }
     }
 
     loadBills() {

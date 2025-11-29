@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Customer } from '../../models/customer.model';
@@ -55,6 +55,7 @@ import { CustomerService } from '../../services/customer.service';
 export class CustomerFormComponent implements OnInit {
     customer: Customer = { name: '', email: '' };
     isEdit = false;
+    private platformId = inject(PLATFORM_ID);
 
     constructor(
         private customerService: CustomerService,
@@ -63,13 +64,15 @@ export class CustomerFormComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        const id = this.route.snapshot.params['id'];
-        if (id) {
-            this.isEdit = true;
-            this.customerService.getById(+id).subscribe({
-                next: (data) => this.customer = data,
-                error: (err) => console.error('Error loading customer', err)
-            });
+        if (isPlatformBrowser(this.platformId)) {
+            const id = this.route.snapshot.params['id'];
+            if (id) {
+                this.isEdit = true;
+                this.customerService.getById(+id).subscribe({
+                    next: (data) => this.customer = data,
+                    error: (err) => console.error('Error loading customer', err)
+                });
+            }
         }
     }
 

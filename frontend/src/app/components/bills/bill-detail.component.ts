@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BillDetail } from '../../models/bill.model';
 import { BillService } from '../../services/bill.service';
@@ -60,6 +60,7 @@ import { BillService } from '../../services/bill.service';
 })
 export class BillDetailComponent implements OnInit {
     billDetail: BillDetail | null = null;
+    private platformId = inject(PLATFORM_ID);
 
     constructor(
         private billService: BillService,
@@ -67,12 +68,14 @@ export class BillDetailComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        const id = this.route.snapshot.params['id'];
-        if (id) {
-            this.billService.getById(+id).subscribe({
-                next: (data) => this.billDetail = data,
-                error: (err) => console.error('Error loading bill', err)
-            });
+        if (isPlatformBrowser(this.platformId)) {
+            const id = this.route.snapshot.params['id'];
+            if (id) {
+                this.billService.getById(+id).subscribe({
+                    next: (data) => this.billDetail = data,
+                    error: (err) => console.error('Error loading bill', err)
+                });
+            }
         }
     }
 }

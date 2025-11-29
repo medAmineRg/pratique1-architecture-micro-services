@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Product } from '../../models/product.model';
@@ -55,6 +55,7 @@ import { ProductService } from '../../services/product.service';
 export class ProductFormComponent implements OnInit {
     product: Product = { name: '', price: 0, quantity: 0 };
     isEdit = false;
+    private platformId = inject(PLATFORM_ID);
 
     constructor(
         private productService: ProductService,
@@ -63,13 +64,15 @@ export class ProductFormComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        const id = this.route.snapshot.params['id'];
-        if (id) {
-            this.isEdit = true;
-            this.productService.getById(+id).subscribe({
-                next: (data) => this.product = data,
-                error: (err) => console.error('Error loading product', err)
-            });
+        if (isPlatformBrowser(this.platformId)) {
+            const id = this.route.snapshot.params['id'];
+            if (id) {
+                this.isEdit = true;
+                this.productService.getById(+id).subscribe({
+                    next: (data) => this.product = data,
+                    error: (err) => console.error('Error loading product', err)
+                });
+            }
         }
     }
 
