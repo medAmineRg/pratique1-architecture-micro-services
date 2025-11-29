@@ -1,4 +1,4 @@
-import { Component, afterNextRender } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BillDetail } from '../../models/bill.model';
@@ -12,36 +12,36 @@ import { BillService } from '../../services/bill.service';
     <div class="container">
       <a routerLink="/bills" class="back-link">← Back to Bills</a>
       
-      @if (billDetail) {
-        <h2>Bill #{{ billDetail.bill.id }}</h2>
+      @if (billDetail(); as detail) {
+        <h2>Bill #{{ detail.bill.id }}</h2>
         
         <div class="card">
           <h3>Bill Information</h3>
-          <p><strong>Quantity:</strong> {{ billDetail.bill.quantity }}</p>
-          <p><strong>Total Amount:</strong> {{ billDetail.bill.totalAmount | currency }}</p>
-          <p><strong>Created At:</strong> {{ billDetail.bill.createdAt | date:'medium' }}</p>
+          <p><strong>Quantity:</strong> {{ detail.bill.quantity }}</p>
+          <p><strong>Total Amount:</strong> {{ detail.bill.totalAmount | currency }}</p>
+          <p><strong>Created At:</strong> {{ detail.bill.createdAt | date:'medium' }}</p>
         </div>
         
         <div class="card">
           <h3>Customer</h3>
-          @if (billDetail.customer) {
-            <p><strong>Name:</strong> {{ billDetail.customer.name }}</p>
-            <p><strong>Email:</strong> {{ billDetail.customer.email }}</p>
-            <p><strong>Phone:</strong> {{ billDetail.customer.phone || '-' }}</p>
-            <p><strong>Address:</strong> {{ billDetail.customer.address || '-' }}</p>
+          @if (detail.customer) {
+            <p><strong>Name:</strong> {{ detail.customer.name }}</p>
+            <p><strong>Email:</strong> {{ detail.customer.email }}</p>
+            <p><strong>Phone:</strong> {{ detail.customer.phone || '-' }}</p>
+            <p><strong>Address:</strong> {{ detail.customer.address || '-' }}</p>
           } @else {
-            <p class="error">{{ billDetail.customerError || 'Customer not found' }}</p>
+            <p class="error">{{ detail.customerError || 'Customer not found' }}</p>
           }
         </div>
         
         <div class="card">
           <h3>Product</h3>
-          @if (billDetail.product) {
-            <p><strong>Name:</strong> {{ billDetail.product.name }}</p>
-            <p><strong>Description:</strong> {{ billDetail.product.description || '-' }}</p>
-            <p><strong>Unit Price:</strong> {{ billDetail.product.price | currency }}</p>
+          @if (detail.product) {
+            <p><strong>Name:</strong> {{ detail.product.name }}</p>
+            <p><strong>Description:</strong> {{ detail.product.description || '-' }}</p>
+            <p><strong>Unit Price:</strong> {{ detail.product.price | currency }}</p>
           } @else {
-            <p class="error">{{ billDetail.productError || 'Product not found' }}</p>
+            <p class="error">{{ detail.productError || 'Product not found' }}</p>
           }
         </div>
       } @else {
@@ -58,18 +58,23 @@ import { BillService } from '../../services/bill.service';
     .error { color: #dc3545; }
   `]
 })
-export class BillDetailComponent {
-    billDetail: BillDetail | null = null;
+export class BillDetailComponent implements OnInit {
+    billDetail = signal<BillDetail | null>(null);
 
     constructor(
         private billService: BillService,
         private route: ActivatedRoute
-    ) {
-        afterNextRender(() => {
-            const id = this.route.snapshot.params['id'];
+    ) { }
+
+    ngOnInit() {
+        this.route.params.subscribe(params => {
+            const id = params['id'];
             if (id) {
                 this.billService.getById(+id).subscribe({
-                    next: (data) => this.billDetail = data,
+                    next: (data) => {
+                        this.billDetail.set(data);
+                        console.log('Bill loaded:', data);
+                    },
                     error: (err) => console.error('Error loading bill', err)
                 });
             }

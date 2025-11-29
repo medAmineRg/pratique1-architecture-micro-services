@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../models/product.model';
@@ -28,7 +28,7 @@ import { ProductService } from '../../services/product.service';
           </tr>
         </thead>
         <tbody>
-          @for (product of products; track product.id) {
+          @for (product of products(); track product.id) {
             <tr>
               <td>{{ product.id }}</td>
               <td>{{ product.name }}</td>
@@ -63,7 +63,7 @@ import { ProductService } from '../../services/product.service';
   `]
 })
 export class ProductsComponent implements OnInit {
-  products: Product[] = [];
+  products = signal<Product[]>([]);
   private readonly productService = inject(ProductService);
 
   ngOnInit() {
@@ -72,7 +72,7 @@ export class ProductsComponent implements OnInit {
 
   loadProducts() {
     this.productService.getAll().subscribe({
-      next: (data) => this.products = data,
+      next: (data) => this.products.set(data),
       error: (err) => console.error('Error loading products', err)
     });
   }

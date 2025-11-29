@@ -1,4 +1,4 @@
-import { Component, afterNextRender } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -52,21 +52,27 @@ import { CustomerService } from '../../services/customer.service';
     .btn-primary:disabled { background: #ccc; }
   `]
 })
-export class CustomerFormComponent {
+export class CustomerFormComponent implements OnInit {
     customer: Customer = { name: '', email: '' };
     isEdit = false;
 
     constructor(
         private customerService: CustomerService,
         private router: Router,
-        private route: ActivatedRoute
-    ) {
-        afterNextRender(() => {
-            const id = this.route.snapshot.params['id'];
+        private route: ActivatedRoute,
+        private readonly cdr: ChangeDetectorRef
+    ) { }
+
+    ngOnInit() {
+        this.route.params.subscribe(params => {
+            const id = params['id'];
             if (id) {
                 this.isEdit = true;
                 this.customerService.getById(+id).subscribe({
-                    next: (data) => this.customer = data,
+                    next: (data) => {
+                        this.customer = data;
+                        this.cdr.markForCheck();
+                    },
                     error: (err) => console.error('Error loading customer', err)
                 });
             }
@@ -76,12 +82,12 @@ export class CustomerFormComponent {
     onSubmit() {
         if (this.isEdit && this.customer.id) {
             this.customerService.update(this.customer.id, this.customer).subscribe({
-                next: () => this.router.navigate(['/customers']),
+                next: () => { this.router.navigate(['/customers']); },
                 error: (err) => console.error('Error updating customer', err)
             });
         } else {
             this.customerService.create(this.customer).subscribe({
-                next: () => this.router.navigate(['/customers']),
+                next: () => { this.router.navigate(['/customers']); },
                 error: (err) => console.error('Error creating customer', err)
             });
         }

@@ -1,4 +1,4 @@
-import { Component, afterNextRender } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,10 +9,10 @@ import { ProductService } from '../../services/product.service';
 import { BillService } from '../../services/bill.service';
 
 @Component({
-    selector: 'app-bill-form',
-    standalone: true,
-    imports: [CommonModule, FormsModule],
-    template: `
+  selector: 'app-bill-form',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
     <div class="container">
       <h2>Create New Bill</h2>
       
@@ -21,7 +21,7 @@ import { BillService } from '../../services/bill.service';
           <label>Customer *</label>
           <select [(ngModel)]="bill.customerId" name="customerId" required class="form-control">
             <option [ngValue]="null">-- Select Customer --</option>
-            @for (customer of customers; track customer.id) {
+            @for (customer of customers(); track customer.id) {
               <option [ngValue]="customer.id">{{ customer.name }} ({{ customer.email }})</option>
             }
           </select>
@@ -31,7 +31,7 @@ import { BillService } from '../../services/bill.service';
           <label>Product *</label>
           <select [(ngModel)]="bill.productId" name="productId" required class="form-control">
             <option [ngValue]="null">-- Select Product --</option>
-            @for (product of products; track product.id) {
+            @for (product of products(); track product.id) {
               <option [ngValue]="product.id">{{ product.name }} - {{ product.price | currency }} (Stock: {{ product.quantity }})</option>
             }
           </select>
@@ -49,7 +49,7 @@ import { BillService } from '../../services/bill.service';
       </form>
     </div>
   `,
-    styles: [`
+  styles: [`
     .container { padding: 20px; max-width: 500px; }
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
@@ -60,44 +60,44 @@ import { BillService } from '../../services/bill.service';
     .btn-primary:disabled { background: #ccc; }
   `]
 })
-export class BillFormComponent {
-    bill = { customerId: null as number | null, productId: null as number | null, quantity: 1 };
-    customers: Customer[] = [];
-    products: Product[] = [];
+export class BillFormComponent implements OnInit {
+  bill = { customerId: null as number | null, productId: null as number | null, quantity: 1 };
+  customers = signal<Customer[]>([]);
+  products = signal<Product[]>([]);
 
-    constructor(
-        private customerService: CustomerService,
-        private productService: ProductService,
-        private billService: BillService,
-        private router: Router
-    ) {
-        afterNextRender(() => {
-            this.customerService.getAll().subscribe({
-                next: (data) => this.customers = data,
-                error: (err) => console.error('Error loading customers', err)
-            });
+  constructor(
+    private customerService: CustomerService,
+    private productService: ProductService,
+    private billService: BillService,
+    private router: Router
+  ) { }
 
-            this.productService.getAvailable().subscribe({
-                next: (data) => this.products = data,
-                error: (err) => console.error('Error loading products', err)
-            });
-        });
+  ngOnInit() {
+    this.customerService.getAll().subscribe({
+      next: (data) => this.customers.set(data),
+      error: (err) => console.error('Error loading customers', err)
+    });
+
+    this.productService.getAvailable().subscribe({
+      next: (data) => this.products.set(data),
+      error: (err) => console.error('Error loading products', err)
+    });
+  }
+
+  onSubmit() {
+    if (this.bill.customerId && this.bill.productId) {
+      this.billService.create({
+        customerId: this.bill.customerId,
+        productId: this.bill.productId,
+        quantity: this.bill.quantity
+      }).subscribe({
+        next: () => this.router.navigate(['/bills']),
+        error: (err) => console.error('Error creating bill', err)
+      });
     }
+  }
 
-    onSubmit() {
-        if (this.bill.customerId && this.bill.productId) {
-            this.billService.create({
-                customerId: this.bill.customerId,
-                productId: this.bill.productId,
-                quantity: this.bill.quantity
-            }).subscribe({
-                next: () => this.router.navigate(['/bills']),
-                error: (err) => console.error('Error creating bill', err)
-            });
-        }
-    }
-
-    cancel() {
-        this.router.navigate(['/bills']);
-    }
+  cancel() {
+    this.router.navigate(['/bills']);
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Bill } from '../../models/bill.model';
@@ -29,7 +29,7 @@ import { BillService } from '../../services/bill.service';
           </tr>
         </thead>
         <tbody>
-          @for (bill of bills; track bill.id) {
+          @for (bill of bills(); track bill.id) {
             <tr>
               <td>{{ bill.id }}</td>
               <td>{{ bill.customerId }}</td>
@@ -65,7 +65,7 @@ import { BillService } from '../../services/bill.service';
   `]
 })
 export class BillsComponent implements OnInit {
-  bills: Bill[] = [];
+  bills = signal<Bill[]>([]);
   private readonly billService = inject(BillService);
 
   ngOnInit() {
@@ -77,7 +77,7 @@ export class BillsComponent implements OnInit {
       next: (data) => {
         console.log('Raw bills data:', data);
         // Map snake_case to camelCase if needed
-        this.bills = data.map((bill: any) => ({
+        const mappedBills = data.map((bill: any) => ({
           id: bill.id,
           customerId: bill.customerId ?? bill.customer_id,
           productId: bill.productId ?? bill.product_id,
@@ -85,7 +85,8 @@ export class BillsComponent implements OnInit {
           totalAmount: bill.totalAmount ?? bill.total_amount,
           createdAt: bill.createdAt ?? bill.created_at
         }));
-        console.log('Mapped bills:', this.bills);
+        this.bills.set(mappedBills);
+        console.log('Mapped bills:', mappedBills);
       },
       error: (err) => console.error('Error loading bills', err)
     });

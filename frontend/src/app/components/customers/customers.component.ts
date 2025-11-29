@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Customer } from '../../models/customer.model';
@@ -28,7 +28,7 @@ import { CustomerService } from '../../services/customer.service';
           </tr>
         </thead>
         <tbody>
-          @for (customer of customers; track customer.id) {
+          @for (customer of customers(); track customer.id) {
             <tr>
               <td>{{ customer.id }}</td>
               <td>{{ customer.name }}</td>
@@ -63,7 +63,7 @@ import { CustomerService } from '../../services/customer.service';
   `]
 })
 export class CustomersComponent implements OnInit {
-    customers: Customer[] = [];
+    customers = signal<Customer[]>([]);
     private readonly customerService = inject(CustomerService);
 
     ngOnInit() {
@@ -72,7 +72,7 @@ export class CustomersComponent implements OnInit {
 
     loadCustomers() {
         this.customerService.getAll().subscribe({
-            next: (data) => this.customers = data,
+            next: (data) => this.customers.set(data),
             error: (err) => console.error('Error loading customers', err)
         });
     }

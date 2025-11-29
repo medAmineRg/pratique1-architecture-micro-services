@@ -1,4 +1,4 @@
-import { Component, afterNextRender } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -52,21 +52,27 @@ import { ProductService } from '../../services/product.service';
     .btn-primary:disabled { background: #ccc; }
   `]
 })
-export class ProductFormComponent {
+export class ProductFormComponent implements OnInit {
     product: Product = { name: '', price: 0, quantity: 0 };
     isEdit = false;
 
     constructor(
         private productService: ProductService,
         private router: Router,
-        private route: ActivatedRoute
-    ) {
-        afterNextRender(() => {
-            const id = this.route.snapshot.params['id'];
+        private route: ActivatedRoute,
+        private readonly cdr: ChangeDetectorRef
+    ) {}
+
+    ngOnInit() {
+        this.route.params.subscribe(params => {
+            const id = params['id'];
             if (id) {
                 this.isEdit = true;
                 this.productService.getById(+id).subscribe({
-                    next: (data) => this.product = data,
+                    next: (data) => {
+                        this.product = data;
+                        this.cdr.markForCheck();
+                    },
                     error: (err) => console.error('Error loading product', err)
                 });
             }
@@ -76,12 +82,12 @@ export class ProductFormComponent {
     onSubmit() {
         if (this.isEdit && this.product.id) {
             this.productService.update(this.product.id, this.product).subscribe({
-                next: () => this.router.navigate(['/products']),
+                next: () => { this.router.navigate(['/products']); },
                 error: (err) => console.error('Error updating product', err)
             });
         } else {
             this.productService.create(this.product).subscribe({
-                next: () => this.router.navigate(['/products']),
+                next: () => { this.router.navigate(['/products']); },
                 error: (err) => console.error('Error creating product', err)
             });
         }
