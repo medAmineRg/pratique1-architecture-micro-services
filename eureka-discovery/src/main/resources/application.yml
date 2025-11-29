@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: eureka-discovery
+  profiles:
+    active: dev
+
+server:
+  port: 8761
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    enable-self-preservation: false
+
+---
+spring:
+  profiles: dev
+
+---
+spring:
+  profiles: prod
+  
+eureka:
+  server:
+    enable-self-preservation: true

@@ -1,0 +1,21 @@
+# Customer Service Configuration
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=customer_schema
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:justForWork}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: customer_schema
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
