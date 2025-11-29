@@ -34,15 +34,13 @@ services:
     healthcheck:
       test:
         [
-          "CMD",
-          "wget",
-          "-q",
-          "--spider",
-          "http://localhost:8761/actuator/health",
+          "CMD-SHELL",
+          "wget -q -O- http://localhost:8761/actuator/health || exit 1",
         ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   # Config Service
   config-service:
@@ -60,15 +58,13 @@ services:
     healthcheck:
       test:
         [
-          "CMD",
-          "wget",
-          "-q",
-          "--spider",
-          "http://localhost:8888/actuator/health",
+          "CMD-SHELL",
+          "wget -q -O- http://localhost:8888/actuator/health || exit 1",
         ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   # Customer Service
   customer-service:
@@ -85,7 +81,7 @@ services:
       - microservices-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CONFIG_IMPORT=configserver:http://config-service:8888
+      - CONFIG_SERVER_URL=http://config-service:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-discovery:8761/eureka
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres?currentSchema=customer_schema
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -106,7 +102,7 @@ services:
       - microservices-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CONFIG_IMPORT=configserver:http://config-service:8888
+      - CONFIG_SERVER_URL=http://config-service:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-discovery:8761/eureka
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres?currentSchema=inventory_schema
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -131,7 +127,7 @@ services:
       - microservices-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CONFIG_IMPORT=configserver:http://config-service:8888
+      - CONFIG_SERVER_URL=http://config-service:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-discovery:8761/eureka
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres?currentSchema=billing_schema
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -156,6 +152,7 @@ services:
       - microservices-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_URL=http://config-service:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-discovery:8761/eureka
 
 volumes:

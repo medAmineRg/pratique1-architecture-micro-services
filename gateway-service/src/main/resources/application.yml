@@ -3,6 +3,8 @@ spring:
     name: gateway-service
   profiles:
     active: dev
+  config:
+    import: "configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
   cloud:
     gateway:
       mvc:
@@ -47,6 +49,28 @@ spring:
   config:
     activate:
       on-profile: prod
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          - id: customer-service
+            uri: lb://customer-service
+            predicates:
+              - Path=/api/customers/**
+          - id: inventory-service
+            uri: lb://inventory-service
+            predicates:
+              - Path=/api/products/**
+          - id: billing-service
+            uri: lb://billing-service
+            predicates:
+              - Path=/api/bills/**
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
   cloud:
     gateway:
       mvc:
