@@ -1,5 +1,5 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, afterNextRender } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Customer } from '../../models/customer.model';
@@ -60,21 +60,18 @@ import { BillService } from '../../services/bill.service';
     .btn-primary:disabled { background: #ccc; }
   `]
 })
-export class BillFormComponent implements OnInit {
+export class BillFormComponent {
     bill = { customerId: null as number | null, productId: null as number | null, quantity: 1 };
     customers: Customer[] = [];
     products: Product[] = [];
-    private platformId = inject(PLATFORM_ID);
 
     constructor(
         private customerService: CustomerService,
         private productService: ProductService,
         private billService: BillService,
         private router: Router
-    ) { }
-
-    ngOnInit() {
-        if (isPlatformBrowser(this.platformId)) {
+    ) {
+        afterNextRender(() => {
             this.customerService.getAll().subscribe({
                 next: (data) => this.customers = data,
                 error: (err) => console.error('Error loading customers', err)
@@ -84,7 +81,7 @@ export class BillFormComponent implements OnInit {
                 next: (data) => this.products = data,
                 error: (err) => console.error('Error loading products', err)
             });
-        }
+        });
     }
 
     onSubmit() {

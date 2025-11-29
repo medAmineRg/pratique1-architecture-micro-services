@@ -1,5 +1,5 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, afterNextRender } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Customer } from '../../models/customer.model';
 import { CustomerService } from '../../services/customer.service';
@@ -61,16 +61,13 @@ import { CustomerService } from '../../services/customer.service';
     .text-center { text-align: center; }
   `]
 })
-export class CustomersComponent implements OnInit {
+export class CustomersComponent {
     customers: Customer[] = [];
-    private platformId = inject(PLATFORM_ID);
 
-    constructor(private customerService: CustomerService) { }
-
-    ngOnInit() {
-        if (isPlatformBrowser(this.platformId)) {
+    constructor(private customerService: CustomerService) {
+        afterNextRender(() => {
             this.loadCustomers();
-        }
+        });
     }
 
     loadCustomers() {
