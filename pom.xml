@@ -35,6 +35,7 @@
         <module>inventory-service</module>
         <module>gateway-service</module>
         <module>billing-service</module>
+        <module>chatbot-service</module>
     </modules>
 
     <properties>

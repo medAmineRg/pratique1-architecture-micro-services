@@ -27,6 +27,10 @@ spring:
           uri: http://billing-service:8083
           predicates:
             - Path=/api/bills/**
+        - id: chatbot-service
+          uri: http://chatbot-service:8084
+          predicates:
+            - Path=/api/chatbot/**
 
 server:
   port: 8080
@@ -91,3 +95,7 @@ spring:
             uri: lb://BILLING-SERVICE
             predicates:
               - Path=/api/bills/**
+          - id: chatbot-service
+            uri: lb://CHATBOT-SERVICE
+            predicates:
+              - Path=/api/chatbot/**

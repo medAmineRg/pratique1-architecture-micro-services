@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=chatbot_schema
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:justForWork}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_schema: chatbot_schema
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
